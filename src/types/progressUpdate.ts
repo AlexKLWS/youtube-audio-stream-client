@@ -1,6 +1,6 @@
 export type ProgressUpdate = {
   type: ProgressUpdateType
-  outputURL: string
+  videoID: string
   downloadPercentage: number
 }
 

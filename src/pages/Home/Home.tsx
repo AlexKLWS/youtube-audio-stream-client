@@ -1,11 +1,13 @@
 import React, { useRef, useState } from 'react'
 
 import { ProgressUpdate, ProgressUpdateType } from '../../types/progressUpdate'
+import { Link } from 'react-router-dom'
+import routes from '../../consts/routes'
 
 const Home: React.FC = () => {
   const webSocket = useRef<WebSocket>()
   const [inputURL, setInputURL] = useState('')
-  const [outputURL, setOutputURL] = useState<string | null>(null)
+  const [id, setID] = useState<string | null>(null)
   const [streamIsReady, setStreamIsReady] = useState(false)
   const [downloadPercentage, setDownloadPercentage] = useState(0)
   const [processStatus, setProcessStatus] = useState<string | null>(null)
@@ -17,7 +19,7 @@ const Home: React.FC = () => {
     const progress = JSON.parse(event.data) as ProgressUpdate
     switch (progress.type) {
       case ProgressUpdateType.DOWNLOAD_BEGUN:
-        setOutputURL(progress.outputURL)
+        setID(progress.videoID)
         setStreamIsReady(false)
         setProcessStatus('Downloading...')
         break
@@ -32,7 +34,7 @@ const Home: React.FC = () => {
         setProcessStatus('Done!')
         break
       case ProgressUpdateType.AUDIO_IS_ALREADY_AVAILABLE:
-        setOutputURL(progress.outputURL)
+        setID(progress.videoID)
         setStreamIsReady(true)
         break
       default:
@@ -41,25 +43,22 @@ const Home: React.FC = () => {
   }
 
   const onSubmit = () => {
-    // let loc = window.location
-    // let uri = 'ws:'
+    let loc = window.location
+    let uri = 'ws:'
 
-    // if (loc.protocol === 'https:') {
-    //   uri = 'wss:'
-    // }
-    // uri += '//' + loc.host
-    // uri += loc.pathname + 'api/videos'
+    if (loc.protocol === 'https:') {
+      uri = 'wss:'
+    }
+    uri += '//' + loc.host + '/api/videos'
 
     if (!inputURL) {
       return
     }
 
     setDownloadPercentage(0)
-    setOutputURL(null)
+    setID(null)
     setStreamIsReady(false)
     setProcessStatus(null)
-
-    let uri = 'ws://localhost:1323/api/videos'
 
     webSocket.current = new WebSocket(uri)
 
@@ -87,15 +86,14 @@ const Home: React.FC = () => {
         />
         <button onClick={onSubmit}>SEND</button>
       </div>
-      {!!outputURL && (
+      {!!id && (
         <div>
-          <p>
+          <span>
             {streamIsReady
-              ? `Audio stream is available ${(<a href={outputURL}>here</a>)}`
-              : `Once video will be downloaded and processed, audio stream will be available ${(
-                  <a href={outputURL}>here</a>
-                )}`}
-          </p>
+              ? `Audio stream is available `
+              : `Once video will be downloaded and processed, audio stream will be available `}
+            <Link to={`${routes.playerBase}/${id}`}>here</Link>
+          </span>
         </div>
       )}
       {!!downloadPercentage && (

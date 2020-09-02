@@ -9,7 +9,7 @@ const Player: React.FC = () => {
 
   useEffect(() => {
     const video = player.current
-    const videoSrc = 'http://localhost:1323/output/AFy0B2ZTmVE/out.m3u8'
+    const videoSrc = `${window.location.origin}/output/${match.params.id}/out.m3u8`
 
     if (Hls.isSupported()) {
       const hls = new Hls()
@@ -49,7 +49,7 @@ const Player: React.FC = () => {
   }, [])
 
   return (
-    <div style={{ backgroundColor: 'rgb(0, 0, 0)', position: 'absolute', width: '640px', height: '360px' }}>
+    <div style={{ backgroundColor: 'rgb(0, 0, 0)', position: 'absolute', width: '100%', height: '360px' }}>
       <audio className='videoCanvas' ref={player} autoPlay={true} />
       <button
         onClick={() => {
