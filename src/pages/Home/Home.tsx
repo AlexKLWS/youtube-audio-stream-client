@@ -76,7 +76,7 @@ const Home: React.FC = () => {
 
   return (
     <div className='App'>
-      <div>
+      <div style={{ padding: '25px 0px' }}>
         <input
           placeholder='Enter youtube url'
           value={inputURL || ''}
@@ -111,6 +111,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+      <div style={{ padding: '25px 0px' }}>v0.0.1</div>
     </div>
   )
 }

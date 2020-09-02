@@ -51,24 +51,30 @@ const Player: React.FC = () => {
   return (
     <div style={{ backgroundColor: 'rgb(0, 0, 0)', position: 'absolute', width: '100%', height: '360px' }}>
       <audio className='videoCanvas' ref={player} autoPlay={true} />
-      <button
-        onClick={() => {
-          if (player.current) {
-            player.current.play()
-          }
-        }}
-      >
-        =PLAY=
-      </button>
-      <button
-        onClick={() => {
-          if (player.current) {
-            player.current.pause()
-          }
-        }}
-      >
-        =PAUSE=
-      </button>
+      <div style={{ padding: '10px' }}>
+        <button
+          style={{ padding: '10px' }}
+          onClick={() => {
+            if (player.current) {
+              player.current.play()
+            }
+          }}
+        >
+          =PLAY=
+        </button>
+      </div>
+      <div style={{ padding: '10px' }}>
+        <button
+          style={{ padding: '10px' }}
+          onClick={() => {
+            if (player.current) {
+              player.current.pause()
+            }
+          }}
+        >
+          =PAUSE=
+        </button>
+      </div>
     </div>
   )
 }
