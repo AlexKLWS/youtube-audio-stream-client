@@ -42,6 +42,7 @@ const Home: React.FC = () => {
         setStreamIsReady(false)
         break
       case ProgressUpdateType.AUDIO_IS_AVAILABLE:
+        setIsRequestAccepted(true)
         setID(update.videoID)
         setStreamIsReady(true)
         setProcessStatus('Done!')
@@ -90,7 +91,7 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className='App'>
+    <div className='App' style={{ padding: '25px 0px' }}>
       {!requestIsAccepted && (
         <div style={{ padding: '25px 0px' }}>
           <input
@@ -109,7 +110,7 @@ const Home: React.FC = () => {
         </div>
       )}
       {!!id && (
-        <div>
+        <div style={{ padding: '20px 0px' }}>
           <span>
             {streamIsReady
               ? `Audio stream is available `
