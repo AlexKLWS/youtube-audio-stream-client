@@ -12,6 +12,7 @@ const Home: React.FC = () => {
   const [downloadPercentage, setDownloadPercentage] = useState(0)
   const [isError, setIsError] = useState(false)
   const [processStatus, setProcessStatus] = useState<string | null>(null)
+  const [requestIsAccepted, setIsRequestAccepted] = useState(false)
 
   const onSocketMessageReceive = (event: MessageEvent) => {
     if (!event.data) {
@@ -19,15 +20,16 @@ const Home: React.FC = () => {
     }
     const update = JSON.parse(event.data) as ProgressUpdate
     switch (update.type) {
+      case ProgressUpdateType.REQUEST_ACCEPTED:
+        setIsRequestAccepted(true)
+        setID(update.videoID)
+        setStreamIsReady(false)
+        setProcessStatus('Processing...')
+        break
       case ProgressUpdateType.DOWNLOAD_BEGUN:
         setID(update.videoID)
         setStreamIsReady(false)
         setProcessStatus('Downloading...')
-        break
-      case ProgressUpdateType.REQUEST_ACCEPTED:
-        setID(update.videoID)
-        setStreamIsReady(false)
-        setProcessStatus('Processing...')
         break
       case ProgressUpdateType.DOWNLOAD_IN_PROGRESS:
         setDownloadPercentage(update.downloadPercentage)
@@ -89,18 +91,20 @@ const Home: React.FC = () => {
 
   return (
     <div className='App'>
-      <div style={{ padding: '25px 0px' }}>
-        <input
-          placeholder='Enter youtube url'
-          value={inputURL || ''}
-          onChange={(event) => {
-            setInputURL(event.target.value)
-          }}
-        />
-        <button onClick={onSubmit}>SEND</button>
-      </div>
+      {!requestIsAccepted && (
+        <div style={{ padding: '25px 0px' }}>
+          <input
+            placeholder='Enter youtube url'
+            value={inputURL || ''}
+            onChange={(event) => {
+              setInputURL(event.target.value)
+            }}
+          />
+          <button onClick={onSubmit}>SEND</button>
+        </div>
+      )}
       {isError && (
-        <div>
+        <div style={{ padding: '20px 0px' }}>
           <span style={{ color: '#D43' }}>{`There was an error processing the video!`}</span>
         </div>
       )}
