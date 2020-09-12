@@ -10,32 +10,42 @@ const Home: React.FC = () => {
   const [id, setID] = useState<string | null>(null)
   const [streamIsReady, setStreamIsReady] = useState(false)
   const [downloadPercentage, setDownloadPercentage] = useState(0)
+  const [isError, setIsError] = useState(false)
   const [processStatus, setProcessStatus] = useState<string | null>(null)
 
   const onSocketMessageReceive = (event: MessageEvent) => {
     if (!event.data) {
       return
     }
-    const progress = JSON.parse(event.data) as ProgressUpdate
-    switch (progress.type) {
+    const update = JSON.parse(event.data) as ProgressUpdate
+    switch (update.type) {
       case ProgressUpdateType.DOWNLOAD_BEGUN:
-        setID(progress.videoID)
+        setID(update.videoID)
         setStreamIsReady(false)
         setProcessStatus('Downloading...')
         break
-      case ProgressUpdateType.DOWNLOAD_IN_PROGRESS:
-        setDownloadPercentage(progress.downloadPercentage)
-        break
-      case ProgressUpdateType.TRANSMUXING_BEGUN:
+      case ProgressUpdateType.REQUEST_ACCEPTED:
+        setID(update.videoID)
+        setStreamIsReady(false)
         setProcessStatus('Processing...')
         break
-      case ProgressUpdateType.TRANSMUXING_FINISHED:
+      case ProgressUpdateType.DOWNLOAD_IN_PROGRESS:
+        setDownloadPercentage(update.downloadPercentage)
+        setProcessStatus('Downloading...')
+        setStreamIsReady(false)
+        break
+      case ProgressUpdateType.TRANSMUXING_BEGUN:
+        setDownloadPercentage(100)
+        setProcessStatus('Transmuxing...')
+        setStreamIsReady(false)
+        break
+      case ProgressUpdateType.AUDIO_IS_AVAILABLE:
+        setID(update.videoID)
         setStreamIsReady(true)
         setProcessStatus('Done!')
         break
-      case ProgressUpdateType.AUDIO_IS_ALREADY_AVAILABLE:
-        setID(progress.videoID)
-        setStreamIsReady(true)
+      case ProgressUpdateType.ERROR:
+        setIsError(true)
         break
       default:
         break
@@ -49,7 +59,8 @@ const Home: React.FC = () => {
     if (loc.protocol === 'https:') {
       uri = 'wss:'
     }
-    uri += '//' + loc.host + '/api/videos'
+    // uri += '//' + loc.host + '/api/videos'
+    uri += '//' + '192.168.0.2:1323' + '/api/videos'
 
     if (!inputURL) {
       return
@@ -72,6 +83,9 @@ const Home: React.FC = () => {
     webSocket.current.onerror = (ev: Event) => {
       console.log('ERROR-EVENT: ', ev)
     }
+    webSocket.current.onclose = () => {
+      console.log('SOCKET-CONNECTION-CLOSED!')
+    }
   }
 
   return (
@@ -86,6 +100,11 @@ const Home: React.FC = () => {
         />
         <button onClick={onSubmit}>SEND</button>
       </div>
+      {isError && (
+        <div>
+          <span style={{ color: '#D43' }}>{`There was an error processing the video!`}</span>
+        </div>
+      )}
       {!!id && (
         <div>
           <span>
@@ -96,6 +115,9 @@ const Home: React.FC = () => {
           </span>
         </div>
       )}
+      <div style={{ padding: '20px 0px' }}>
+        <b>{processStatus}</b>
+      </div>
       {!!downloadPercentage && (
         <div style={{ padding: '10px' }}>
           <div
@@ -107,11 +129,11 @@ const Home: React.FC = () => {
               transition: 'all 0.3s ease-in-out',
             }}
           >
-            <p style={{ color: '#FFF' }}>{processStatus}</p>
+            <p style={{ color: '#FFF' }}>{`${downloadPercentage}%`}</p>
           </div>
         </div>
       )}
-      <div style={{ padding: '25px 0px' }}>v0.0.1</div>
+      <div style={{ padding: '25px 0px' }}>v0.0.3</div>
     </div>
   )
 }
