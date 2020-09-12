@@ -59,8 +59,7 @@ const Home: React.FC = () => {
     if (loc.protocol === 'https:') {
       uri = 'wss:'
     }
-    // uri += '//' + loc.host + '/api/videos'
-    uri += '//' + '192.168.0.2:1323' + '/api/videos'
+    uri += '//' + loc.host + '/api/videos'
 
     if (!inputURL) {
       return

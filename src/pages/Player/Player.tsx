@@ -24,8 +24,7 @@ const Player: React.FC = () => {
 
   useEffect(() => {
     const audio = player.current
-    // const videoSrc = `${window.location.origin}/output/${match.params.id}/out.m3u8`
-    const audioSrc = `http://192.168.0.2:1323/output/${match.params.id}/out.m3u8`
+    const audioSrc = `${window.location.origin}/output/${match.params.id}/out.m3u8`
 
     if (Hls.isSupported()) {
       const hls = new Hls()
