@@ -1,23 +1,39 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import Hls from 'hls.js'
 
 const Player: React.FC = () => {
-  const player = useRef<HTMLVideoElement | null>(null)
+  const player = useRef<HTMLAudioElement | null>(null)
 
   const match = useRouteMatch<{ id: string }>()
 
+  const [isMuted, setIsMuted] = useState(false)
+  const [isReady, setIsReady] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const prepare = (audio: HTMLAudioElement) => {
+    audio.onplay = () => {
+      setIsPlaying(true)
+    }
+    audio.onpause = () => {
+      setIsPlaying(false)
+    }
+    setIsMuted(audio.muted)
+    setIsReady(true)
+  }
+
   useEffect(() => {
-    const video = player.current
-    const videoSrc = `${window.location.origin}/output/${match.params.id}/out.m3u8`
+    const audio = player.current
+    // const videoSrc = `${window.location.origin}/output/${match.params.id}/out.m3u8`
+    const audioSrc = `http://192.168.0.2:1323/output/${match.params.id}/out.m3u8`
 
     if (Hls.isSupported()) {
       const hls = new Hls()
-      hls.loadSource(videoSrc)
-      hls.attachMedia(video as HTMLMediaElement)
+      hls.loadSource(audioSrc)
+      hls.attachMedia(audio as HTMLMediaElement)
       hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        if (video) {
-          video.play()
+        if (audio) {
+          prepare(audio)
         }
       })
     }
@@ -35,14 +51,14 @@ const Player: React.FC = () => {
     // event will be emitted; the last video event that can be reliably
     // listened-for when the URL is not on the white-list is 'loadedmetadata'.
     // @ts-expect-error
-    else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      if (!video) {
+    else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+      if (!audio) {
         return
       }
-      video.src = videoSrc
-      video.addEventListener('loadedmetadata', function () {
-        if (video) {
-          video.play()
+      audio.src = audioSrc
+      audio.addEventListener('loadedmetadata', function () {
+        if (audio) {
+          prepare(audio)
         }
       })
     }
@@ -51,30 +67,39 @@ const Player: React.FC = () => {
   return (
     <div style={{ backgroundColor: 'rgb(0, 0, 0)', position: 'absolute', width: '100%', height: '360px' }}>
       <audio className='videoCanvas' ref={player} autoPlay={true} />
-      <div style={{ padding: '10px' }}>
-        <button
-          style={{ padding: '10px' }}
-          onClick={() => {
-            if (player.current) {
-              player.current.play()
-            }
-          }}
-        >
-          =PLAY=
-        </button>
-      </div>
-      <div style={{ padding: '10px' }}>
-        <button
-          style={{ padding: '10px' }}
-          onClick={() => {
-            if (player.current) {
-              player.current.pause()
-            }
-          }}
-        >
-          =PAUSE=
-        </button>
-      </div>
+      {isReady && (
+        <>
+          <div style={{ padding: '10px' }}>
+            <button
+              style={{ padding: '10px' }}
+              onClick={() => {
+                if (player.current) {
+                  if (isPlaying) {
+                    player.current.pause()
+                  } else {
+                    player.current.play()
+                  }
+                }
+              }}
+            >
+              {isPlaying ? '=PAUSE=' : '=PLAY='}
+            </button>
+          </div>
+          <div style={{ padding: '10px' }}>
+            <button
+              style={{ padding: '10px' }}
+              onClick={() => {
+                if (player.current) {
+                  player.current.muted = !player.current.muted
+                  setIsMuted(player.current.muted)
+                }
+              }}
+            >
+              {isMuted ? '=UNMUTE=' : '=MUTE='}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
